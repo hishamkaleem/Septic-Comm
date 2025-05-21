@@ -60,7 +60,7 @@ void setup() {
   J* setReq = mycard.newRequest("hub.set");
   if (setReq) {
     JAddStringToObject(setReq, "product", prodID); //Project set
-    JAddStringToObject(setReq, "mode", "minimum"); //Min mode set
+    JAddStringToObject(setReq, "mode", "continuous"); //Cont mode set
     mycard.sendRequest(setReq);
   }
 
