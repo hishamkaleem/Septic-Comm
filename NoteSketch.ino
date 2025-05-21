@@ -5,12 +5,12 @@
 
 Notecard mycard; //Notecard decleration
 
-const float tank_depth = 150;  //Tank depth in cm
-const float sample_increment = 30; //Sample increment
+float tank_depth = 150;  //Tank depth in cm
+float sample_increment = 30; //Sample increment
 const int num_sensors = 6; //# of sensors
 
 struct Sensor { //Sensor struct
-  const char* name;
+  char* name;
   int pin;
 };
 
@@ -24,7 +24,7 @@ void formatSend(float depth, float* dataArr) { //Format data and sync to notehub
     JAddNumberToObject(req, "Tank Depth", depth);
     
     J* timeReq = mycard.newRequest("time.get"); // Timestamp object
-    J* timeRsp = mycard.sendRequest(timeReq);
+    J* timeRsp = mycard.requestAndResponse(timeReq);
     if (timeRsp) {
       const char* timeStr = JGetString(timeRsp, "time");
       if (timeStr) {
@@ -66,18 +66,18 @@ void setup() {
 
   J* timeReq = mycard.newRequest("time.set"); //Sync real time for timestamping
   if (timeReq){
-    JAddStringToObject(req, "mode", "auto");
-    mycard.sendRequest(req);
+    JAddStringToObject(timeReq, "mode", "auto");
+    mycard.sendRequest(timeReq);
   }
 }
 
 void loop() {
   float depth = 0;
   while (depth < tank_depth){ //Reverse if depth value increases
-    depth = analogRead( ); //Read servo depth
-    if (depth % sample_increment == 0){
+    depth = analogRead(); //Read servo depth
+    if (int(depth) % int(sample_increment) == 0){
       tankSample(depth);
     }
   }  
-  delay( ); //Wait for 24 hrs
+  delay(); //Wait for 24 hrs
 }
