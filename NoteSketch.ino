@@ -79,5 +79,5 @@ void loop() {
       tankSample(depth);
     }
   }  
-  delay(); //Wait for 24 hrs
+  delay( ); //Wait for 24 hrs
 }
