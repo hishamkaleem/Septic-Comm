@@ -16,7 +16,7 @@ def lambda_handler(event, context):
     s3.put_object(
         Bucket=bucket_name,
         Key=filename,
-        Body=json.dumps(event),
+        Body=json.dumps(event), 
         ContentType='application/json'
     )
     
