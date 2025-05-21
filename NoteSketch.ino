@@ -65,7 +65,7 @@ void setup() {
   }
 
   J* timeReq = mycard.newRequest("time.set"); //Sync real time for timestamping
-  if (timeReq){
+  if (timeReq){ 
     JAddStringToObject(timeReq, "mode", "auto");
     mycard.sendRequest(timeReq);
   }
