@@ -16,23 +16,17 @@ struct Sensor { //Sensor struct
 
 Sensor sensors[num_sensors] = {}; //Global sensor array
 
-void formatSend(float depth, float* dataArr) { //Format data and sync to notehub
+void formatSend(float depth, float* dataArr) {
+  J* timeReq = NoteNewRequest("card.time");
+  J* timeRsp = mycard.requestAndResponse(timeReq); //Timestamp
+
   J* req = mycard.newRequest("note.add");
   if (req != NULL) {
-    JAddStringToObject(req, "file", "tankdata.qo"); //Queue data
-    JAddBoolToObject(req, "sync", true); // Sync forcefully (min mode)
-    JAddNumberToObject(req, "Tank Depth", depth);
-    
-    J* timeReq = mycard.newRequest("time.get"); // Timestamp object
-    J* timeRsp = mycard.requestAndResponse(timeReq);
-    if (timeRsp) {
-      const char* timeStr = JGetString(timeRsp, "time");
-      if (timeStr) {
-        JAddStringToObject(req, "Logged Time", timeStr);
-      }
-      JDelete(timeRsp);
-    }
+    JAddStringToObject(req, "file", "tankdata.qo");
+    JAddBoolToObject(req, "sync", true);
+
     J* body = JCreateObject();
+    JAddNumberToObject(body, "Tank Depth", depth);
     for (int i = 0; i < num_sensors; i++) {
       JAddNumberToObject(body, sensors[i].name, dataArr[i]);
     }
@@ -41,7 +35,7 @@ void formatSend(float depth, float* dataArr) { //Format data and sync to notehub
   }
 }
 
-void tankSample(float depth) { //Sample tank with all sensors
+void tankSample(float depth) { //Sample with all sensors
   float dataArr[num_sensors] = {};
   for (int i = 0; i < num_sensors; i++) {
     dataArr[i] = analogRead(sensors[i].pin);
@@ -63,21 +57,31 @@ void setup() {
     JAddStringToObject(setReq, "mode", "continuous"); //Cont mode set
     mycard.sendRequest(setReq);
   }
-
-  J* timeReq = mycard.newRequest("time.set"); //Sync real time for timestamping
-  if (timeReq){ 
-    JAddStringToObject(timeReq, "mode", "auto");
-    mycard.sendRequest(timeReq);
-  }
 }
-
 void loop() {
-  float depth = 0;
-  while (depth < tank_depth){ //Reverse if depth value increases
-    depth = analogRead(); //Read servo depth
-    if (int(depth) % int(sample_increment) == 0){
-      tankSample(depth);
+  bool connected = false;
+
+  for (int i = 0; i < 10 && !connected; i++) { //Wait for hub connection
+    J* statusReq = NoteNewRequest("card.status");
+    J* statusRsp = mycard.requestAndResponse(statusReq);
+    if (statusRsp != NULL) {
+      connected = JGetBool(statusRsp, "connected");
+      JDelete(statusRsp);
     }
-  }  
+    if (!connected) {
+      Serial.println("Waiting for Notehub connection...");
+      delay(5000);  // Wait 5 secs before retry
+    }
+  }
+
+  if (connected) {
+    float depth = 0;
+    while (depth < (tank_depth - 20)){ //Reverse if depth value increases + adjustment factor
+      depth = analogRead( ); //Read servo depth
+      if (int(depth) % int(sample_increment) == 0){
+        tankSample(depth);
+      }
+    }  
+  }
   delay( ); //Wait for 24 hrs
 }
