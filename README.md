@@ -1,6 +1,8 @@
 <a id="readme-top"></a>
 
-Follow this guide in the given order of steps to setup the AWS data pipeline
+# Data Upload/Pipelining
+
+Follow this guide in the given order of steps to setup Notehub and the AWS data pipeline
 
 
 ## Notehub Setup
@@ -17,7 +19,7 @@ Create an AWS account and a general-purpose AWS S3 bucket for data storage at [A
 1. Visit [AWS Lambda](https://aws.amazon.com/lambda/) and create a function from scratch. Select the runtime to be `Python 3.12`
 2. In the function's `Layers` menu, add a new layer and choose the `Specify an ARN` option. Copy and paste the HTTP Requests ARN below into the field and press `Verify`
 ```sh
-   arn:aws:lambda:ca-central-1:770693421928:layer:Klayers-p312-requests:15
+arn:aws:lambda:ca-central-1:770693421928:layer:Klayers-p312-requests:15
 ```
 3. Copy/paste the code in the `lambda.py` file into the function's `Code Source` menu and change the `bucket_name` variable to your S3 bucket's name
 4. In your [Notehub](https://notehub.io/projects) project, navigate to the `Devices` tab and take note of your `Device UID`. Replace the `device_uid` variable in the lambda function code
@@ -26,6 +28,12 @@ Create an AWS account and a general-purpose AWS S3 bucket for data storage at [A
 5. In project settings, scroll down to the `Programmatic API access` menu. Click `Generate Programmatic Access` and replace the `clientID` variable 
   in the function code with the given client ID and the `clientSecret` variable with the given client secret before clicking save
 6. Click `Deploy` in the lambda `Code Source` menu to push and sync the code changes
+
+### IAM Role Creation
+1. Visit [AWS IAM Manager](https://aws.amazon.com/iam/) and go to `Roles`, then select `Create Role`
+2. Select `AWS Service` and then select `Lambda` under `Use Case`
+3. Now select `AdministratorAccess` under `Add Permissions` and create the role
+4. Go to your [Lambda function](https://aws.amazon.com/lambda/) and select your newly created role under the `Permissions` tab in the `Configuration` menu
 
 ### API Gateway 
 1. Visit [AWS API Gateway](https://aws.amazon.com/api-gateway/) and create an API via the `HTTP API` option
@@ -40,4 +48,28 @@ created lambda function from the options listed
 in the `Data` tab and then create the route
 
 
-Data pipelining has now been set up and the sensor readings should appear in both Notehub (under `Events`) and your S3 Bucket as JSON files
+### Data pipelining has now been set up and the sensor readings should appear in both Notehub (under `Events`) and your S3 Bucket as JSON files
+
+# Data Plotting
+
+Follow this guide in the given order of steps AFTER following the Data Upload/Pipelining guide to plot the data via matplotlib
+
+### Package Installation
+
+Open a new command prompt terminal and run
+```sh
+pip install boto3 pandas matplotlib
+```
+### IAM User Creation
+1. Visit [AWS IAM Manager](https://aws.amazon.com/iam/) and go to `Users`, then select `Create User`
+2. Choose the `Attach Policies Directly` option and select `AdministratorAccess`, then create the user
+3. Once the user is created, go to `Security Credentials` and click `Create Access Key`
+4. Select the `Local Code` option and create the access key, taking note of the given `Access Key` and `Secret Access Key`
+
+### Script Edits
+1. Replace the corresponding variables at the top of the `dataPlot.py` file with the obtained `Access Key` and `Secret Access Key`
+2. Replace the corresponding varibale at the top of the `dataPlot.py` file with your AWS S3 `Bucket Name`
+
+### Running the `dataPlot.py` script locally should now plot the sensor data stored in the S3 bucket in multiple matplotlib windows for varying tank depths
+
+
