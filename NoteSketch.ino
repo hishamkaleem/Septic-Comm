@@ -18,26 +18,12 @@ struct Sensor { //Sensor struct
 
 Sensor sensors[num_sensors] = {{"Potentiometer", 39},{"Temperature", 0}}; //Global sensor array
 
-double getDataUsage(){
-  J* req = NoteNewRequest("card.usage.get");
-  int sent, received;
-  if (req != NULL) {
-    JAddStringToObject(req, "mode", "total");
-    J* rsp = mycard.requestAndResponse(req);
-    if (rsp != NULL) {
-      sent = JGetInt(rsp, "bytes_sent");
-      received = JGetInt(rsp, "bytes_received");
-    }
-  }
-  double dataUsage = (double)(sent + received)/1000000.0;
-  return dataUsage;
-}
-
 void formatSend(float depth, float* dataArr) {
   J* req = mycard.newRequest("note.add"); 
   if (req != NULL) {
-    JAddStringToObject(req, "file", "tankdata.qo");
+    JAddStringToObject(req, "file", "tankdata.qo"); //Create a new file
 
+    // Add all data to the request body
     J* body = JCreateObject(); 
     JAddNumberToObject(body, "Tank Depth", depth);
 
@@ -45,22 +31,21 @@ void formatSend(float depth, float* dataArr) {
       JAddNumberToObject(body, sensors[i].name, dataArr[i]);
     }
 
-    double dataUsage = getDataUsage();
-    JAddNumberToObject(body, "Total Data Usage (MB): ", dataUsage);
-
     JAddItemToObject(req, "body", body);
     mycard.sendRequest(req);
   }
+
+  // Send a sync request to Notehub to ensure data is sent immediately
   J* syncReq = NoteNewRequest("hub.sync");
   JAddBoolToObject(syncReq, "allow", true);
   mycard.sendRequest(syncReq);
-
 }
 
-void tankSample(float depth) { //Sample tank with all sensors
+ //Sample tank with all sensors (REPLACE WITH OWN SAMPLING LOGIC)
+void tankSample(float depth) {
   float dataArr[num_sensors] = {};
-  dataArr[0] = analogRead(39);
-  if (temp.measure()){
+  dataArr[0] = analogRead(39); //Test for potentiometer (remove if not using)
+  if (temp.measure()){ //Test for temperature sensor (remove if not using)
     dataArr[1] = temp.getTemperature();
   }
   formatSend(depth,dataArr);
@@ -77,7 +62,7 @@ void setup() {
   J* setReq = mycard.newRequest("hub.set");
   if (setReq) {
     JAddStringToObject(setReq, "product", prodID); //Project set
-    JAddStringToObject(setReq, "mode", "continuous"); //Min mode set
+    JAddStringToObject(setReq, "mode", "continuous"); //Mode set
     mycard.sendRequest(setReq);
   }
 
@@ -88,7 +73,8 @@ void loop() {
   bool connected = false;
   bool timeSet = false;
 
-  for (int i = 0; i < 10 && !connected; i++) {
+  // Wait for Notehub connection to be set
+  while (!connected) {
     J* statusReq = NoteNewRequest("card.status");
     J* statusRsp = mycard.requestAndResponse(statusReq);
     if (statusRsp != NULL) {
@@ -101,6 +87,7 @@ void loop() {
     }
   }
 
+  // Wait for time to be set
   if (connected) {
     for (int i = 0; i < 10 && !timeSet; i++) {
       J* timeReq = NoteNewRequest("card.time");
@@ -116,10 +103,9 @@ void loop() {
     }
   }
 
-  if (connected && timeSet) {
-    tankSample(30);
-  } else {
-    Serial.println("Sampling skipped: connection or time not ready.");
+  // If connected and time is set, start sampling
+  while (connected && timeSet){
+    tankSample(30); //REPLACE WITH OWN DEPTH SAMPLING LOGIC
+    delay(10000); //Change delay to desired sampling rate
   }
-  delay(10000);  // Wait before trying again
 }
