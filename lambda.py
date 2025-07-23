@@ -56,7 +56,7 @@ def lambda_handler(event, context):
 
         # Request data usage from Notecard via the function
         dataUsage = notecardDataReq()
-        body["Total Data Usage (MB):"] = dataUsage
+        body["Total Data Usage (MB)"] = dataUsage
 
         # Upload the JSON data to S3
         s3.put_object(

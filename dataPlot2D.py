@@ -52,30 +52,27 @@ sensor_columns = [
 
 # Plot one figure per depth in separate windows
 for depth in unique_depths:
-    df_depth = df[df["Tank Depth"] == depth]
-
-    # Plot dimensions/title
+    df_depth = df[df["Tank Depth"] == depth].copy()
+    
     fig, ax = plt.subplots(figsize=(14, 5))
     fig.canvas.manager.set_window_title(f"Tank Depth: {depth} cm")
 
-    # Plot each sensor
     for sensor in sensor_columns:
-        ax.plot(df_depth["timestamp"], df_depth[sensor], label=sensor)
+        ax.plot(range(len(df_depth)), df_depth[sensor], label=sensor)
 
-    # Labels and formatting
-    ax.set_title(f"Sensor Data for Tank Depth: {depth} cm")
+    N = max(1, len(df_depth) // 10)  # Adjust 10 to control how many labels are shown
+
+    tick_indices = list(range(0, len(df_depth), N))
+    tick_labels = [df_depth["timestamp"].iloc[i].strftime("%b %d\n%H:%M") for i in tick_indices]
+
+    ax.set_xticks(tick_indices)
+    ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=9)
+    ax.set_title(f"Sensor Data for Tank Depth: {depth} cm (2D)")
     ax.set_ylabel("Sensor Values")
-    ax.set_xlabel("Time (H:M:S)")
+    ax.set_xlabel("Time (even spacing)")
     ax.grid(True)
 
-    # Format x-axis labels
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d %H:%M:%S"))
-    ax.tick_params(axis='x', rotation=45)
-
-    # Make a legend and keep it outside right of the plot
     ax.legend(loc='upper left', bbox_to_anchor=(1.01, 1.0))
-
-    # Padding for legend and bottom tick labels
     fig.subplots_adjust(right=0.8, bottom=0.3)
 
     plt.show(block=False)
