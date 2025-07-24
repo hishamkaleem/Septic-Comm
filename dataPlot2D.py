@@ -1,8 +1,8 @@
-import boto3
+import boto3 #Need to pip
 import json
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+import pandas as pd #Need to pip
+import matplotlib.pyplot as plt #Need to pip
+import matplotlib.dates as mdates #Need to pip
 
 AWS_access_key_id = "ABC..."     #User access key (REPLACE WITH OWN)
 AWS_secret_access_key = "XYZ..." #User secret access key (REPLACE WITH OWN)

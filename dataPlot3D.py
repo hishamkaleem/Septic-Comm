@@ -1,11 +1,14 @@
-import boto3
+import boto3 #Need to pip
 import json
-import pandas as pd
-import numpy as np
-import plotly.graph_objs as go
-import plotly.io as pio
+import pandas as pd #Ned to pip
+import numpy as np #Need to pip
+import plotly.graph_objs as go #Need to pip
+import plotly.io as pio #Need to pip
+from datetime import datetime
+import webbrowser
+import os
 
-pio.renderers.default = "browser" #Render in browser as seperate windows
+pio.renderers.default = "json" #Renderer for Plotly
 
 AWS_access_key_id = "ABC..."     #User access key (REPLACE WITH OWN)
 AWS_secret_access_key = "XYZ..." #User secret access key (REPLACE WITH OWN)
@@ -65,6 +68,8 @@ known = {"timestamp", "Tank Depth", "Total Data Usage (MB)", "time_offset_sec", 
 sensor_cols = [c for c in df.columns if c not in known]
 depths = sorted(df["Tank Depth"].unique())
 
+allFigs = ""
+
 #Plot figure per sensor in 3D
 for sensor in sensor_cols:
     fig = go.Figure()
@@ -87,7 +92,7 @@ for sensor in sensor_cols:
                 hovertext=(
                     "Elapsed: " + df_sub["time_label"] +
                     "<br>Time: " + df_sub["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S.%f") +
-                    "<br>Depth: " + df_sub["Tank Depth"].astype(str) +
+                    "<br>Depth (cm): " + df_sub["Tank Depth"].astype(str) +
                     "<br>Value: " + df_sub[sensor].astype(str)
                 ),
                 hoverinfo="text"
@@ -111,10 +116,11 @@ for sensor in sensor_cols:
                 # X-axis ticks using custom values
                 tickvals=tickvals.tolist(),
                 ticktext=ticktext,
-                showgrid=True
+                showgrid=True,
+                autorange="reversed"
             ),
-            yaxis=dict(title="Tank Depth (cm)"),
-            zaxis=dict(title="Sensor Value"),
+            yaxis=dict(title="Tank Depth (cm)", autorange="reversed", showgrid=True),
+            zaxis=dict(title="Sensor Value", autorange=True, showgrid=True),
             camera=dict(eye=dict(x=1.5, y=1.5, z=1.2))
         ),
         # Set margins for better visibility
@@ -123,4 +129,47 @@ for sensor in sensor_cols:
         width=800,
         showlegend=True
     )
-    fig.show() #Show the figure in a new browser window
+    # Convert to HTML and append to the list
+    allFigs += pio.to_html(fig, full_html=False, include_plotlyjs=True) + "<hr>" 
+    
+# Create output directory if it doesn't exist
+output_dir = "Generated Plots"
+os.makedirs(output_dir, exist_ok=True)
+
+# Timestamped filename
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+filename = f"3DPLOT_{timestamp}.html"
+output_path = os.path.join(output_dir, filename)
+
+# Wrap all HTML figures in a single HTML document (very basic formatting)
+final_html = f"""
+<html>
+<head>
+    <title>Sensor Plots (3D)</title>
+    <style>
+        body {{
+            font-family: sans-serif;
+            padding: 20px;
+        }}
+        hr {{
+            margin: 60px 0;
+            border: none;
+            border-top: 1px solid #ccc;
+        }}
+    </style>
+</head>
+<body>
+    <h1>3D Plots for All System Sensors</h1>
+    {allFigs}
+</body>
+</html>
+"""
+
+# Write HTML to file
+with open(output_path, "w", encoding="utf-8") as f:
+    f.write(final_html)
+
+# Open the generated HTML file in chrome (CHANGE TO OWN BROWSER PATH IF NEEDED)
+html_path = os.path.abspath(output_path)
+chrome_path = "C:/Program Files/Google/Chrome/Application/chrome.exe %s"
+webbrowser.get(chrome_path).open(f"file://{html_path}")
