@@ -91,7 +91,7 @@ for sensor in sensor_cols:
                 # Hover text showing elapsed time, timestamp, depth, and sensor value
                 hovertext=(
                     "Elapsed: " + df_sub["time_label"] +
-                    "<br>Time: " + df_sub["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S.%f") +
+                    "<br>Time: " + df_sub["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S") +
                     "<br>Depth (cm): " + df_sub["Tank Depth"].astype(str) +
                     "<br>Value: " + df_sub[sensor].astype(str)
                 ),
