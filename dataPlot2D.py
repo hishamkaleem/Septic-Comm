@@ -70,7 +70,7 @@ for depth in unique_depths:
     ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=9)
     ax.set_title(f"Sensor Data for Tank Depth: {depth} cm (2D)")
     ax.set_ylabel("Sensor Values")
-    ax.set_xlabel("Time (even spacing)")
+    ax.set_xlabel("Time")
     ax.grid(True)
 
     # Add legend outside the plot area

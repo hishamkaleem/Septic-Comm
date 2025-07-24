@@ -1,9 +1,11 @@
 import boto3
 import json
 import pandas as pd
+import numpy as np
 import plotly.graph_objs as go
-from plotly.subplots import make_subplots
-import math
+import plotly.io as pio
+
+pio.renderers.default = "browser" #Render in browser as seperate windows
 
 AWS_access_key_id = "ABC..."     #User access key (REPLACE WITH OWN)
 AWS_secret_access_key = "XYZ..." #User secret access key (REPLACE WITH OWN)
@@ -42,33 +44,36 @@ df = df.sort_values(["timestamp", "Tank Depth"])
 start_time = df["timestamp"].min()
 df["time_offset_sec"] = (df["timestamp"] - start_time).dt.total_seconds()
 
+# Format time offset for hover labels (e.g., 1 hr 2 min 3 s)
+def format_elapsed(seconds):
+    seconds = int(seconds)
+    hrs, remainder = divmod(seconds, 3600)
+    mins, secs = divmod(remainder, 60)
+    parts = []
+    if hrs > 0:
+        parts.append(f"{hrs}h")
+    if mins > 0:
+        parts.append(f"{mins}m")
+    if secs > 0 or not parts:
+        parts.append(f"{secs}s")
+    return " ".join(parts)
+
+df["time_label"] = df["time_offset_sec"].apply(format_elapsed) #Apply formatted time label 
+
 # Determine sensor columns
-known = {"timestamp", "Tank Depth", "Total Data Usage (MB)", "time_offset_sec"}
+known = {"timestamp", "Tank Depth", "Total Data Usage (MB)", "time_offset_sec", "time_label"}
 sensor_cols = [c for c in df.columns if c not in known]
 depths = sorted(df["Tank Depth"].unique())
 
-# Subplot layout setup
-num_sensors = len(sensor_cols)
-cols = 2
-rows = math.ceil(num_sensors / cols)
-
-fig = make_subplots(
-    rows=rows,
-    cols=cols,
-    specs=[[{'type': 'scatter3d'}] * cols for _ in range(rows)],
-    subplot_titles=sensor_cols
-)
-
-# Add traces per sensor and depth
-for idx, sensor in enumerate(sensor_cols):
-    row = (idx // cols) + 1
-    col = (idx % cols) + 1
+#Plot figure per sensor in 3D
+for sensor in sensor_cols:
+    fig = go.Figure()
 
     for depth in depths:
         df_sub = df[df["Tank Depth"] == depth]
         if df_sub.empty:
             continue
-
+        # Add a trace for each depth
         fig.add_trace(
             go.Scatter3d(
                 x=df_sub["time_offset_sec"],
@@ -78,36 +83,44 @@ for idx, sensor in enumerate(sensor_cols):
                 name=f"{sensor} @ {depth}cm",
                 line=dict(width=2),
                 marker=dict(size=3),
-                hovertext=df_sub["timestamp"].dt.strftime("%H:%M:%S.%f"),
-                hoverinfo="text+name"
-            ),
-            row=row,
-            col=col
+                # Hover text showing elapsed time, timestamp, depth, and sensor value
+                hovertext=(
+                    "Elapsed: " + df_sub["time_label"] +
+                    "<br>Time: " + df_sub["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S.%f") +
+                    "<br>Depth: " + df_sub["Tank Depth"].astype(str) +
+                    "<br>Value: " + df_sub[sensor].astype(str)
+                ),
+                hoverinfo="text"
+            )
         )
 
-# Update each subplot's 3D scene individually
-layout_updates = {}
-for i in range(1, num_sensors + 1):
-    scene_name = "scene" if i == 1 else f"scene{i}"
-    layout_updates[scene_name] = dict(
-        xaxis=dict(
-            title="Time Offset (s)",
-            tickmode="auto",
-            showgrid=True
+    # Define custom X-axis ticks (max 7)
+    x_min = df["time_offset_sec"].min()
+    x_max = df["time_offset_sec"].max()
+    num_ticks = min(7, len(df))  # fallback if dataset is small
+    tickvals = np.linspace(x_min, x_max, num_ticks)
+    ticktext = [format_elapsed(t) for t in tickvals]
+
+    # Update layout
+    fig.update_layout(
+        title=f"{sensor} vs Time/Depth (3D)",
+        scene=dict(
+            # Set axis titles
+            xaxis=dict(
+                title="Elapsed Time",
+                # X-axis ticks using custom values
+                tickvals=tickvals.tolist(),
+                ticktext=ticktext,
+                showgrid=True
+            ),
+            yaxis=dict(title="Tank Depth (cm)"),
+            zaxis=dict(title="Sensor Value"),
+            camera=dict(eye=dict(x=1.5, y=1.5, z=1.2))
         ),
-        yaxis=dict(title="Depth (cm)"),
-        zaxis=dict(title="Sensor Value"),
-        camera=dict(eye=dict(x=1.5, y=1.5, z=1.2))
+        # Set margins for better visibility
+        margin=dict(l=20, r=20, t=50, b=20),
+        height=600,
+        width=800,
+        showlegend=True
     )
-
-# Apply layout updates and display
-fig.update_layout(
-    **layout_updates,
-    height=400 * rows,
-    width=1000,
-    title_text="3D Sensor Readings by Tank Depth (Subplots per Sensor)",
-    margin=dict(l=20, r=20, t=50, b=20),
-    showlegend=False
-)
-
-fig.show()
+    fig.show() #Show the figure in a new browser window
