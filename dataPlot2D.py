@@ -47,7 +47,7 @@ unique_depths = sorted(df["Tank Depth"].unique(), reverse=True)
 # Creating a list of sensor columns
 sensor_columns = [
     col for col in df.columns
-    if col not in ["timestamp", "Tank Depth", "Total Data Usage (MB):"] #Add other columns to exclude if needed
+    if col not in ["timestamp", "Tank Depth", "Total Data Usage (MB)"] #Add other columns to exclude if needed
 ]
 
 # Plot one figure per depth in separate windows
@@ -65,6 +65,7 @@ for depth in unique_depths:
     tick_indices = list(range(0, len(df_depth), N))
     tick_labels = [df_depth["timestamp"].iloc[i].strftime("%b %d\n%H:%M") for i in tick_indices]
 
+    # Set x-ticks to evenly spaced indices
     ax.set_xticks(tick_indices)
     ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=9)
     ax.set_title(f"Sensor Data for Tank Depth: {depth} cm (2D)")
@@ -72,6 +73,7 @@ for depth in unique_depths:
     ax.set_xlabel("Time (even spacing)")
     ax.grid(True)
 
+    # Add legend outside the plot area
     ax.legend(loc='upper left', bbox_to_anchor=(1.01, 1.0))
     fig.subplots_adjust(right=0.8, bottom=0.3)
 

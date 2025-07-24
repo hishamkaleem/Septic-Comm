@@ -7,16 +7,15 @@
 Notecard mycard; //Notecard decleration
 AM2320 temp;
 
-float tank_depth = 150;  //Tank depth in cm
-float sample_increment = 30; //Sample increment
-const int num_sensors = 2; //# of sensors
+const int num_sensors = 6; //# of sensors
 
 struct Sensor { //Sensor struct
   const char* name;
   int pin;
 };
 
-Sensor sensors[num_sensors] = {{"Potentiometer", 39},{"Temperature", 0}}; //Global sensor array
+//Sensor sensors[num_sensors] = {{"Potentiometer", 39},{"Temperature", 0}}; //Global sensor array
+Sensor sensors[num_sensors] = {{"Turbidity", 2}, {"Potentiometer", 3}, {"Light", 4}, {"Infrared", 5}, {"Magnetic", 6}, {"Temperature", 0}};
 
 void formatSend(float depth, float* dataArr) {
   J* req = mycard.newRequest("note.add"); 
@@ -41,12 +40,14 @@ void formatSend(float depth, float* dataArr) {
   mycard.sendRequest(syncReq);
 }
 
- //Sample tank with all sensors (REPLACE WITH OWN SAMPLING LOGIC)
+ //Sample tank with all sensors
 void tankSample(float depth) {
   float dataArr[num_sensors] = {};
-  dataArr[0] = analogRead(39); //Test for potentiometer (remove if not using)
+  for (int i = 0; i < num_sensors-1; i++){
+    dataArr[i] = analogRead(sensors[i].pin);
+  }
   if (temp.measure()){ //Test for temperature sensor (remove if not using)
-    dataArr[1] = temp.getTemperature();
+     dataArr[5] = temp.getTemperature();
   }
   formatSend(depth,dataArr);
 }
@@ -65,7 +66,6 @@ void setup() {
     JAddStringToObject(setReq, "mode", "continuous"); //Mode set
     mycard.sendRequest(setReq);
   }
-
   temp.begin();
 } 
 
@@ -104,8 +104,17 @@ void loop() {
   }
 
   // If connected and time is set, start sampling
+  int x = 30;
+  int dat = 0;
   while (connected && timeSet){
-    tankSample(30); //REPLACE WITH OWN DEPTH SAMPLING LOGIC
-    delay(10000); //Change delay to desired sampling rate
+    tankSample(x);
+    dat++;
+    Serial.println(dat);
+    x += 30;
+    if (x > 150){
+      x = 30;
+    }
+    delay(7000); //Change delay to desired sampling rate
   }
 }
+//CURRENT DATA USAGE: 1.44 MB
