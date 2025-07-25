@@ -14,7 +14,6 @@ struct Sensor { //Sensor struct
   int pin;
 };
 
-//Sensor sensors[num_sensors] = {{"Potentiometer", 39},{"Temperature", 0}}; //Global sensor array
 Sensor sensors[num_sensors] = {{"Turbidity", 2}, {"Potentiometer", 3}, {"Light", 4}, {"Infrared", 5}, {"Magnetic", 6}, {"Temperature", 0}};
 
 void formatSend(float depth, float* dataArr) {
@@ -117,4 +116,9 @@ void loop() {
     delay(7000); //Change delay to desired sampling rate
   }
 }
-//CURRENT DATA USAGE: 1.44 MB
+
+//CURRENT DATA USAGE: 1.66 MB
+
+//END DATA USAGE: 
+
+//APPROXIMATE DATA USAGE PER REQUEST: ( - 1.66 MB)/  = 
