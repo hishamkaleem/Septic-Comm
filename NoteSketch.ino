@@ -113,7 +113,7 @@ void loop() {
     if (x > 150){
       x = 30;
     }
-    delay(7000); //Change delay to desired sampling rate
+    delay(15000); //Change delay to desired sampling rate
   }
 }
 
