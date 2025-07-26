@@ -177,7 +177,7 @@ webbrowser.get(chrome_path).open(f"file://{tmp_path}")
 # *********** UNCOMMENT IF WANTING TO DOWNLOAD AND SAVE PLOTS ***********
 
 # # Create output directory if it doesn't exist
-# output_dir = "Generated Plots"
+# output_dir = "Generated 3D Plots"
 # os.makedirs(output_dir, exist_ok=True)
 
 # # Timestamped filename

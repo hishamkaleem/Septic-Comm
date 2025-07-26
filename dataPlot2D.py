@@ -1,8 +1,11 @@
 import boto3 #Need to pip
 import json
 import pandas as pd #Need to pip
-import matplotlib.pyplot as plt #Need to pip
-import matplotlib.dates as mdates #Need to pip
+import plotly.graph_objs as go #Need to pip
+import os
+import subprocess
+import tempfile
+from datetime import datetime
 
 AWS_access_key_id = "ABC..."     #User access key (REPLACE WITH OWN)
 AWS_secret_access_key = "XYZ..." #User secret access key (REPLACE WITH OWN)
@@ -50,34 +53,40 @@ sensor_columns = [
     if col not in ["timestamp", "Tank Depth", "Total Data Usage (MB)"] #Add other columns to exclude if needed
 ]
 
-# Plot one figure per depth in separate windows
-for depth in unique_depths:
-    df_depth = df[df["Tank Depth"] == depth].copy()
+# Create a 2D plot for each sensor
+for sensor in sensor_columns:
+    fig = go.Figure()
+    # Plot one line per depth for particular sensor
+    for depth in unique_depths:
+        df_depth = df[df["Tank Depth"] == depth].copy()
+        fig.add_trace(go.Scatter(
+            x=df_depth["timestamp"],
+            y=df_depth[sensor],
+            mode="lines",
+            name=f"{depth} cm"
+        ))
+
+    # Style and layout of the plot
+    fig.update_layout(
+        title=f"{sensor} vs Time (2D)",
+        xaxis_title="Time",
+        yaxis_title=f"{sensor} Value",
+        hovermode="x unified",
+        margin=dict(t=60, r=20, b=60, l=50),
+        height=500
+    )
     
-    fig, ax = plt.subplots(figsize=(14, 5))
-    fig.canvas.manager.set_window_title(f"Tank Depth: {depth} cm")
+    chrome_path = "C:/Program Files/Google/Chrome/Application/chrome.exe" # Path to Chrome executable (CHANGE IF NEEDED)
 
-    for sensor in sensor_columns:
-        ax.plot(range(len(df_depth)), df_depth[sensor], label=sensor)
+    # Create a directory to save the plots
+    base_dir = "Generated 2D Plots"
+    os.makedirs(base_dir, exist_ok=True)
+    
+    # Save in sensor-named directory
+    sensor_dir = os.path.join(base_dir, sensor.replace(" ", "_"))
+    os.makedirs(sensor_dir, exist_ok=True)
 
-    N = max(1, len(df_depth) // 10)  # Adjust 10 to control how many labels are shown
-
-    tick_indices = list(range(0, len(df_depth), N))
-    tick_labels = [df_depth["timestamp"].iloc[i].strftime("%b %d\n%H:%M") for i in tick_indices]
-
-    # Set x-ticks to evenly spaced indices
-    ax.set_xticks(tick_indices)
-    ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=9)
-    ax.set_title(f"Sensor Data for Tank Depth: {depth} cm (2D)")
-    ax.set_ylabel("Sensor Values")
-    ax.set_xlabel("Time")
-    ax.grid(True)
-
-    # Add legend outside the plot area
-    ax.legend(loc='upper left', bbox_to_anchor=(1.01, 1.0))
-    fig.subplots_adjust(right=0.8, bottom=0.3)
-
-    plt.show(block=False)
-    plt.pause(0.1)
-
-plt.show() # Keep the last plot open (prevents immediate termination of the script)
+    timestamp_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # Timestamp for filename
+    html_path = os.path.join(sensor_dir, f"{timestamp_str}.html")
+    fig.write_html(html_path)
+    subprocess.Popen([chrome_path, "--new-window", os.path.abspath(html_path)]) # Open in new Chrome window
