@@ -52,13 +52,13 @@ in the `Data` tab and then create the route
 
 # Data Plotting
 
-Follow this guide in the given order of steps AFTER following the Data Upload/Pipelining guide to plot the data via matplotlib
+Follow this guide in the given order of steps AFTER following the Data Upload/Pipelining guide to plot the data via Plotly
 
 ### Package Installation
 
 Open a new command prompt terminal and run
 ```sh
-pip install boto3 pandas matplotlib
+pip install boto3 pandas numpy plotly
 ```
 ### IAM User Creation
 1. Visit [AWS IAM Manager](https://aws.amazon.com/iam/) and go to `Users`, then select `Create User`
@@ -67,9 +67,10 @@ pip install boto3 pandas matplotlib
 4. Select the `Local Code` option and create the access key, taking note of the given `Access Key` and `Secret Access Key`
 
 ### Script Edits
-1. Replace the corresponding variables at the top of the `dataPlot.py` file with the obtained `Access Key` and `Secret Access Key`
-2. Replace the corresponding varibale at the top of the `dataPlot.py` file with your AWS S3 `Bucket Name`
+1. Replace the corresponding variables at the top of the `dataPlot2D.py` and `dataPlot3D.py` files with the obtained `Access Key` and `Secret Access Key`
+2. Replace the corresponding variables at the top of the `dataPlot2D.py` and `dataPlot3D.py` files with your AWS S3 `Bucket Name`
+3. Comment/Uncomment the appropriate blocks in both scripts to allow for local saving of HTML plot files if needed
 
-### Running the `dataPlot.py` script locally should now plot the sensor data stored in the S3 bucket in multiple matplotlib windows for varying tank depths
+### Running the `dataPlot2D.py` and `dataPlot3D.py` scripts locally should now plot the sensor data stored in the S3 bucket in multiple Plotly Chrome windows and optionally save them in the same directory that holds the scripts
 
 

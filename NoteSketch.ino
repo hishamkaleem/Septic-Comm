@@ -14,7 +14,7 @@ struct Sensor { //Sensor struct
   int pin;
 };
 
-Sensor sensors[num_sensors] = {{"Turbidity", 2}, {"Potentiometer", 3}, {"Light", 4}, {"Infrared", 5}, {"Magnetic", 6}, {"Temperature", 0}};
+Sensor sensors[num_sensors] = {{"Turbidity", 2}, {"Potentiometer", 3}, {"Light", 4}, {"Infrared", 5}, {"Magnetic", 6}, {"Temperature", 0}}; //DEFINE SENSOR NAMES PROPERLY FOR PROPER PLOTTING
 
 void formatSend(float depth, float* dataArr) {
   J* req = mycard.newRequest("note.add"); 
