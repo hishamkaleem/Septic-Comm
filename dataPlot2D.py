@@ -2,10 +2,13 @@ import boto3 #Need to pip
 import json
 import pandas as pd #Need to pip
 import plotly.graph_objs as go #Need to pip
+import plotly.io as pio #Need to pip
 import os
 import subprocess
 import tempfile
 from datetime import datetime
+
+pio.renderers.default = "json" #Renderer for Plotly
 
 AWS_access_key_id = "ABC..."     #User access key (REPLACE WITH OWN)
 AWS_secret_access_key = "XYZ..." #User secret access key (REPLACE WITH OWN)
@@ -105,8 +108,8 @@ for sensor in sensor_columns:
     # sensor_dir = os.path.join(base_dir, sensor.replace(" ", "_"))
     # os.makedirs(sensor_dir, exist_ok=True)
 
-    # timestamp_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # Timestamp for filename
-    # html_path = os.path.join(sensor_dir, f"2DPLOT_{timestamp_str}.html")
+    # timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # Timestamp for filename
+    # html_path = os.path.join(sensor_dir, f"{sensor.replace(' ', '_')}_{timestamp}.html")
     # fig.write_html(html_path)
     # subprocess.Popen([chrome_path, "--new-window", os.path.abspath(html_path)]) # Open in new Chrome window
     

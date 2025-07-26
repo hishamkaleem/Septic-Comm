@@ -4,10 +4,10 @@ import pandas as pd #Ned to pip
 import numpy as np #Need to pip
 import plotly.graph_objs as go #Need to pip
 import plotly.io as pio #Need to pip
-from datetime import datetime
-import tempfile
-import webbrowser
 import os
+import tempfile
+import subprocess
+from datetime import datetime
 
 pio.renderers.default = "json" #Renderer for Plotly
 
@@ -54,7 +54,7 @@ def format_elapsed(seconds):
     days, remainder = divmod(seconds, 86400) # Mod by 86400 secs to get days
     hrs, remainder = divmod(remainder, 3600) # Mod by 3600 secs to get hours
     mins, secs = divmod(remainder, 60) # Mod by 60 secs to get minutes
-    
+
     parts = []
     if days > 0:
         parts.append(f"{days}d")
@@ -73,8 +73,6 @@ df["time_label"] = df["time_offset_sec"].apply(format_elapsed) #Apply formatted 
 known = {"timestamp", "Tank Depth", "Total Data Usage (MB)", "time_offset_sec", "time_label"}
 sensor_cols = [c for c in df.columns if c not in known]
 depths = sorted(df["Tank Depth"].unique())
-
-allFigs = ""
 
 #Plot figure per sensor in 3D
 for sensor in sensor_cols:
@@ -131,69 +129,52 @@ for sensor in sensor_cols:
         ),
         # Set margins for better visibility
         margin=dict(l=20, r=20, t=50, b=20),
-        height=600,
-        width=800,
+        autosize=True,
         showlegend=True
     )
-    # Convert to HTML and append to the list
-    allFigs += pio.to_html(fig, full_html=False, include_plotlyjs=True) + "<hr>" 
+   
+    chrome_path = "C:/Program Files/Google/Chrome/Application/chrome.exe"
 
-# Wrap all HTML figures in a single HTML document (very basic formatting)
-final_html = f"""
-<html>
-<head>
-    <title>Sensor Plots (3D)</title>
-    <style>
-        body {{
-            font-family: sans-serif;
-            padding: 20px;
-        }}
-        hr {{
-            margin: 60px 0;
-            border: none;
-            border-top: 1px solid #ccc;
-        }}
-    </style>
-</head>
-<body>
-    <h1>3D Plots for All System Sensors</h1>
-    {allFigs}
-</body>
-</html>
-"""
+    # ******* Temporary file handling (COMMENT OUT IF WANTING TO SAVE PLOTS) ******
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".html", encoding="utf-8") as tmp:
+        tmp_path = os.path.abspath(tmp.name)
+        fig.write_html(
+            tmp_path,
+            full_html=True,
+            include_plotlyjs="cdn",
+            config={"responsive": True}
+        )
 
-# ****** Temporary file handling (COMMENT OUT IF WANTING TO SAVE PLOTS) ******
+    subprocess.Popen([
+        chrome_path,
+        "--new-window",
+        tmp_path
+    ])
+    
+    # *****************************************************************************
+    
+    
+    # ******* UNCOMMENT IF WANTING TO DOWNLOAD AND SAVE PLOTS ***********
+    
+    # base_output_dir = "Generated 3D Plots"
+    # os.makedirs(base_output_dir, exist_ok=True)
+    # sensor_dir = os.path.join(base_output_dir, sensor.replace(" ", "_"))
+    # os.makedirs(sensor_dir, exist_ok=True)
 
-# # Create a temporary HTML file to display the plots
-with tempfile.NamedTemporaryFile("w", delete=False, suffix=".html", encoding="utf-8") as tmp:
-    tmp.write(final_html)
-    tmp_path = os.path.abspath(tmp.name)
-chrome_path = "C:/Program Files/Google/Chrome/Application/chrome.exe %s"
-webbrowser.get(chrome_path).open(f"file://{tmp_path}")
+    # timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    # html_filename = f"{sensor.replace(' ', '_')}_{timestamp}.html"
+    # html_path = os.path.join(sensor_dir, html_filename)
+    # fig.write_html(html_path)
+    
+    # subprocess.Popen([
+    #     chrome_path,
+    #     "--new-window",
+    #     os.path.abspath(html_path)
+    # ])
+    
+    # ********************************************************************
+    
+    
 
-# ****************************************************************************
-
-
-# *********** UNCOMMENT IF WANTING TO DOWNLOAD AND SAVE PLOTS ***********
-
-# # Create output directory if it doesn't exist
-# output_dir = "Generated 3D Plots"
-# os.makedirs(output_dir, exist_ok=True)
-
-# # Timestamped filename
-# timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-# filename = f"3DPLOT_{timestamp}.html"
-# output_path = os.path.join(output_dir, filename)
-
-# # Write HTML to file
-# with open(output_path, "w", encoding="utf-8") as f:
-#     f.write(final_html)
-
-# # Open the generated HTML file in chrome (CHANGE TO OWN BROWSER PATH IF NEEDED)
-# html_path = os.path.abspath(output_path)
-# chrome_path = "C:/Program Files/Google/Chrome/Application/chrome.exe %s"
-# webbrowser.get(chrome_path).open(f"file://{html_path}")
-
-# *********************************************************************
 
 
