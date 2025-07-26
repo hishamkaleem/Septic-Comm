@@ -63,7 +63,8 @@ for sensor in sensor_columns:
             x=df_depth["timestamp"],
             y=df_depth[sensor],
             mode="lines",
-            name=f"{depth} cm"
+            name=f"{depth} cm",
+           hovertemplate = f"Depth: {depth} cm   Value: " + "%{y}<extra></extra>"
         ))
 
     # Style and layout of the plot
@@ -71,22 +72,42 @@ for sensor in sensor_columns:
         title=f"{sensor} vs Time (2D)",
         xaxis_title="Time",
         yaxis_title=f"{sensor} Value",
-        hovermode="x unified",
+        hovermode="x",
         margin=dict(t=60, r=20, b=60, l=50),
         height=500
     )
     
     chrome_path = "C:/Program Files/Google/Chrome/Application/chrome.exe" # Path to Chrome executable (CHANGE IF NEEDED)
-
-    # Create a directory to save the plots
-    base_dir = "Generated 2D Plots"
-    os.makedirs(base_dir, exist_ok=True)
     
-    # Save in sensor-named directory
-    sensor_dir = os.path.join(base_dir, sensor.replace(" ", "_"))
-    os.makedirs(sensor_dir, exist_ok=True)
+    # ****** Temporary file handling (COMMENT OUT IF WANTING TO SAVE PLOTS) ******
+    
+    # Create a temporary file to save the plot
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
+        tmp_path = tmp_file.name
+        fig.write_html(tmp_path)
 
-    timestamp_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # Timestamp for filename
-    html_path = os.path.join(sensor_dir, f"{timestamp_str}.html")
-    fig.write_html(html_path)
-    subprocess.Popen([chrome_path, "--new-window", os.path.abspath(html_path)]) # Open in new Chrome window
+    # Open the plot in a new Chrome window
+    subprocess.Popen([
+        chrome_path,
+        "--new-window",
+        os.path.abspath(tmp_path)
+    ])
+    
+    # ****************************************************************************
+
+    # ******* UNCOMMENT IF WANTING TO DOWNLOAD AND SAVE PLOTS ***********
+    
+    # # Create a directory to save the plots
+    # base_dir = "Generated 2D Plots"
+    # os.makedirs(base_dir, exist_ok=True)
+    
+    # # Save in sensor-named directory
+    # sensor_dir = os.path.join(base_dir, sensor.replace(" ", "_"))
+    # os.makedirs(sensor_dir, exist_ok=True)
+
+    # timestamp_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # Timestamp for filename
+    # html_path = os.path.join(sensor_dir, f"2DPLOT_{timestamp_str}.html")
+    # fig.write_html(html_path)
+    # subprocess.Popen([chrome_path, "--new-window", os.path.abspath(html_path)]) # Open in new Chrome window
+    
+    # ********************************************************************
