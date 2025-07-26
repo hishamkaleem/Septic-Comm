@@ -51,15 +51,20 @@ df["time_offset_sec"] = (df["timestamp"] - start_time).dt.total_seconds()
 # Format time offset for hover labels (e.g., 1 hr 2 min 3 s)
 def format_elapsed(seconds):
     seconds = int(seconds)
-    hrs, remainder = divmod(seconds, 3600)
-    mins, secs = divmod(remainder, 60)
+    days, remainder = divmod(seconds, 86400) # Mod by 86400 secs to get days
+    hrs, remainder = divmod(remainder, 3600) # Mod by 3600 secs to get hours
+    mins, secs = divmod(remainder, 60) # Mod by 60 secs to get minutes
+    
     parts = []
+    if days > 0:
+        parts.append(f"{days}d")
     if hrs > 0:
         parts.append(f"{hrs}h")
     if mins > 0:
         parts.append(f"{mins}m")
     if secs > 0 or not parts:
         parts.append(f"{secs}s")
+
     return " ".join(parts)
 
 df["time_label"] = df["time_offset_sec"].apply(format_elapsed) #Apply formatted time label 
