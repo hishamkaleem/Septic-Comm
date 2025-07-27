@@ -117,8 +117,24 @@ void loop() {
   }
 }
 
+
+
+// DATA USAGE FOR 100 CONSECUTIVE REQUESTS (6 sensors, 15 sec delay):
+//**********************************************************************************
 //CURRENT DATA USAGE: 1.66 MB
 
 //END DATA USAGE: 1.76 MB
 
-//APPROXIMATE DATA USAGE PER REQUEST (6 Sensors): (1.76 MB - 1.66 MB)/99  = 1.01 KB
+//APPROXIMATE DATA USAGE PER REQUEST: (1.76 MB - 1.66 MB)/100  = 1.00 KB
+//**********************************************************************************
+
+
+
+// DATA USAGE FOR 100 SEPERATED REQUESTS (6 sensors, 15 sec delay, 5 depths, 20 samples):
+//***********************************************************************************
+// CURRENT DATA USAGE: 1.76 MB
+
+// END DATA USAGE: 
+
+// APPROXIMATE DATA USAGE PER REQUEST: ( - 1.76 MB)/100 =
+//*********************************************************************************** 
