@@ -130,11 +130,11 @@ void loop() {
 
 
 
-// DATA USAGE FOR 100 SEPERATED REQUESTS (6 sensors, 15 sec delay, 5 depths, 20 samples):
+// DATA USAGE FOR 50 SEPERATED REQUESTS (6 sensors, 15 sec delay, 5 depths, 10 samples):
 //***********************************************************************************
 // CURRENT DATA USAGE: 1.76 MB
 
 // END DATA USAGE: 
 
-// APPROXIMATE DATA USAGE PER REQUEST: ( - 1.76 MB)/100 =
+// APPROXIMATE DATA USAGE PER REQUEST: ( - 1.76 MB)/50 =
 //*********************************************************************************** 
