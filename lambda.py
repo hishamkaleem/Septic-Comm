@@ -52,7 +52,7 @@ def lambda_handler(event, context):
         body["timestamp"] = timestamp
         
         # Save the body to S3 with the timestamp in the filename
-        filename = f"Sensor_Data_{timestamp}.json"
+        filename = f"SensorData_{timestamp}.json"
 
         # Request data usage from Notecard via the function
         dataUsage = notecardDataReq()

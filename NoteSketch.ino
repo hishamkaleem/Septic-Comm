@@ -88,7 +88,7 @@ void loop() {
 
   // Wait for time to be set
   if (connected) {
-    for (int i = 0; i < 10 && !timeSet; i++) {
+    while(!timeSet) {
       J* timeReq = NoteNewRequest("card.time");
       J* timeRsp = mycard.requestAndResponse(timeReq);
       if (timeRsp != NULL) {
@@ -129,12 +129,11 @@ void loop() {
 //**********************************************************************************
 
 
-
 // DATA USAGE FOR 50 SEPERATED REQUESTS (6 sensors, 15 sec delay, 5 depths, 10 samples):
 //***********************************************************************************
 // CURRENT DATA USAGE: 1.76 MB
 
-// END DATA USAGE: 
+// END DATA USAGE: 2.08 MB
 
-// APPROXIMATE DATA USAGE PER REQUEST: ( - 1.76 MB)/50 =
+// APPROXIMATE DATA USAGE PER REQUEST: (2.08 MB - 1.76 MB)/50 = 6.4 KB 
 //*********************************************************************************** 
