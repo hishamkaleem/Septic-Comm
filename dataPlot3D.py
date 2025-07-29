@@ -132,6 +132,21 @@ for sensor in sensor_cols:
         autosize=True,
         showlegend=True
     )
+    
+    # Add annotation for first recorded time
+    fig.add_annotation(
+    xref="paper", yref="paper",
+    x=1.02, y=0.86,
+    xanchor="left", yanchor="top",
+    text=f"<b>First Recorded Time:</b><br>{start_time.strftime("%Y-%m-%d %H:%M:%S")}",
+    showarrow=False,
+    font=dict(size=12),
+    align="left",
+    bordercolor="black",
+    borderwidth=1,
+    borderpad=4,
+    bgcolor="rgba(255,255,255,0.85)"
+    )
    
     chrome_path = "C:/Program Files/Google/Chrome/Application/chrome.exe"
 
