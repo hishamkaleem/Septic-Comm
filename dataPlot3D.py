@@ -136,7 +136,7 @@ for sensor in sensor_cols:
     # Add annotation for first recorded time
     fig.add_annotation(
     xref="paper", yref="paper",
-    x=1.02, y=0.86,
+    x=1.02, y=0.80,
     xanchor="left", yanchor="top",
     text=f"<b>First Recorded Time:</b><br>{start_time.strftime("%Y-%m-%d %H:%M:%S")}",
     showarrow=False,
